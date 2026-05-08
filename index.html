@@ -9,9 +9,9 @@
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
-            background-color: #FFF9F0; /* Creamy White */
+            background-color: #FFF9F0;
             margin: 0;
-            overflow: hidden; /* Prevent body scroll for app feel */
+            overflow: hidden;
         }
         
         .side-panel {
@@ -21,10 +21,6 @@
         }
 
         .bg-mint { background-color: #E6F7F5; }
-        .bg-strawberry { background-color: #FFF0F3; }
-        .bg-lemon { background-color: #FEFCE8; }
-        .bg-lavender { background-color: #F8F7FF; }
-        
         .macaroon-button {
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 3px solid white;
@@ -36,18 +32,8 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
 
-        .option-correct {
-            background-color: #A7F3D0 !important;
-            border-color: #34D399 !important;
-            color: #065F46 !important;
-        }
-
-        .option-wrong {
-            background-color: #FECACA !important;
-            border-color: #F87171 !important;
-            color: #991B1B !important;
-            animation: shake 0.4s;
-        }
+        .option-correct { background-color: #A7F3D0 !important; border-color: #34D399 !important; color: #065F46 !important; }
+        .option-wrong { background-color: #FECACA !important; border-color: #F87171 !important; color: #991B1B !important; animation: shake 0.4s; }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -55,87 +41,43 @@
             75% { transform: translateX(5px); }
         }
 
-        .video-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
+        .video-container { position: relative; width: 100%; height: 100%; background: #000; }
+        #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        #player {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .progress-bar-container {
-            display: flex;
-            gap: 6px;
-            padding: 10px;
-            background: white;
-            border-radius: 99px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #E5E7EB;
-            transition: all 0.3s;
-        }
-
+        .progress-bar-container { display: flex; gap: 6px; padding: 10px; background: white; border-radius: 99px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #E5E7EB; transition: all 0.3s; }
         .dot.active { background: #FF9AA2; transform: scale(1.3); }
         .dot.done { background: #B5EAD7; }
     </style>
 </head>
 <body class="flex flex-col md:flex-row">
 
-    <!-- Left Side: Questions and UI -->
-    <div class="w-full md:w-1/2 side-panel bg-mint p-6 md:p-12 justify-between border-r-4 border-white">
-        
-        <!-- Header -->
-        <div class="flex flex-col gap-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-teal-600">🎵 Music Challenge</h1>
-                <div class="progress-bar-container" id="progress-dots"></div>
-            </div>
-            <p class="text-teal-800 opacity-70">Listen to the song and pick the right word!</p>
+    <!-- Questions -->
+    <div class="w-full md:w-1/2 side-panel bg-mint p-6 md:p-10 justify-between border-r-4 border-white">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold text-teal-600">🎵 Music Quest</h1>
+            <div class="progress-bar-container" id="progress-dots"></div>
         </div>
 
-        <!-- Question Area -->
-        <div class="flex flex-col gap-8 flex-grow justify-center py-8">
-            <div class="bg-white p-10 rounded-[40px] shadow-sm border-4 border-white relative">
-                <span id="track-count" class="absolute -top-4 left-8 bg-pink-400 text-white px-4 py-1 rounded-full text-sm font-bold shadow-md">Song 1 / 15</span>
-                <h3 id="song-name" class="text-gray-400 text-sm mb-4 italic">Loading...</h3>
-                <p id="lyric-box" class="text-2xl md:text-3xl font-bold text-gray-700 leading-relaxed text-center">
-                   "Wait a minute, let me <span class="text-pink-400 border-b-4 border-pink-200 px-2">_______</span>."
+        <div class="flex flex-col gap-6 flex-grow justify-center">
+            <div class="bg-white p-8 rounded-[40px] shadow-sm border-4 border-white relative">
+                <span id="track-count" class="absolute -top-3 left-6 bg-pink-400 text-white px-3 py-1 rounded-full text-xs font-bold">Song 1 / 15</span>
+                <p id="lyric-box" class="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed text-center">
+                   Loading question...
                 </p>
             </div>
 
-            <!-- Options Grid -->
-            <div id="options-container" class="grid grid-cols-2 gap-4">
-                <!-- Buttons injected by JS -->
-            </div>
+            <div id="options-container" class="grid grid-cols-2 gap-3"></div>
         </div>
 
-        <!-- Footer Navigation -->
-        <div class="flex justify-between items-center pt-4">
-            <button onclick="prevTrack()" class="macaroon-button bg-white text-teal-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
-                <svg width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
-                Back
-            </button>
-            <div id="status-msg" class="text-pink-500 font-bold hidden">Great Job! ⭐</div>
-            <button onclick="nextTrack()" class="macaroon-button bg-pink-100 text-pink-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
-                Next
-                <svg width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
-            </button>
+        <div class="flex justify-between items-center">
+            <button onclick="prevTrack()" class="macaroon-button bg-white text-teal-600 px-4 py-2 rounded-xl font-bold text-sm">Back</button>
+            <div id="status-msg" class="text-pink-500 font-bold hidden">Great! ⭐</div>
+            <button onclick="nextTrack()" class="macaroon-button bg-pink-100 text-pink-600 px-4 py-2 rounded-xl font-bold text-sm">Next</button>
         </div>
     </div>
 
-    <!-- Right Side: Video -->
+    <!-- Video -->
     <div class="w-full md:w-1/2 side-panel bg-black">
         <div class="video-container">
             <div id="player"></div>
@@ -145,21 +87,21 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const songs = [
-            { title: "Peaches - Justin Bieber", videoId: "pyWFE7qKR8I", start: 0, end: 15, lyric: "I get my peaches out in _______.", answer: "Georgia", options: ["Florida", "Georgia", "Taiwan", "London"] },
-            { title: "Flowers - Miley Cyrus", videoId: "G7KNmW9a75Y", start: 62, end: 75, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a car", "diamonds"] },
-            { title: "Stay - The Kid LAROI & Justin Bieber", videoId: "kTJczUoc26U", start: 35, end: 50, lyric: "I need you to stay, _______.", answer: "need you to stay", options: ["don't go away", "need you to stay", "I love you today", "won't you play"] },
-            { title: "Cupid - FIFTY FIFTY", videoId: "Qc7_zRjH808", start: 53, end: 68, lyric: "I'm feeling _______.", answer: "lonely", options: ["happy", "lonely", "sleepy", "hungry"] },
-            { title: "Golden Hour - JVKE", videoId: "PEM0Vs8jf1w", start: 58, end: 75, lyric: "It was just two less _______.", answer: "lonely people", options: ["happy people", "lonely people", "angry people", "funny people"] },
-            { title: "Anti-Hero - Taylor Swift", videoId: "b7QlX3yR2xs", start: 40, end: 55, lyric: "It's me, hi, I'm the _______, it's me.", answer: "problem", options: ["teacher", "problem", "hero", "student"] },
-            { title: "Dynamite - BTS", videoId: "gdZLi9oWNZg", start: 30, end: 45, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
-            { title: "Levitating - Dua Lipa", videoId: "TUVcZfQe-Kw", start: 55, end: 70, lyric: "I believe that we're _______.", answer: "meant to be", options: ["dancing free", "meant to be", "in the sea", "flying high"] },
-            { title: "Bad Habits - Ed Sheeran", videoId: "orJSJGHjBLI", start: 58, end: 72, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "the park"] },
-            { title: "Dance Monkey - Tones and I", videoId: "q0hyYWKXF0Q", start: 35, end: 50, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
-            { title: "Perfect - Ed Sheeran", videoId: "2Vv-BfVoq4g", start: 60, end: 75, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
-            { title: "Shake It Off - Taylor Swift", videoId: "nfWlot6h_JM", start: 45, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "bake"] },
-            { title: "Count On Me - Bruno Mars", videoId: "6k8cpUkKK4c", start: 30, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "my best friend"] },
-            { title: "Shallow - Lady Gaga", videoId: "bo_efYhYU2A", start: 90, end: 105, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
-            { title: "Yummy - Justin Bieber", videoId: "8EJ3zhqeP9w", start: 35, end: 50, lyric: "You got that yummy, _______.", answer: "yummy", options: ["yummy", "honey", "funny", "sunny"] }
+            { title: "Peaches", videoId: "pyWFE7qKR8I", start: 0, end: 15, lyric: "I get my peaches out in _______.", answer: "Georgia", options: ["Florida", "Georgia", "Taiwan", "London"] },
+            { title: "Flowers", videoId: "G7KNmW9a75Y", start: 62, end: 75, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a car", "diamonds"] },
+            { title: "Stay", videoId: "kTJczUoc26U", start: 35, end: 50, lyric: "I need you to stay, _______.", answer: "need you to stay", options: ["don't go away", "need you to stay", "I love you", "won't you play"] },
+            { title: "Cupid", videoId: "Qc7_zRjH808", start: 53, end: 68, lyric: "I'm feeling _______.", answer: "lonely", options: ["happy", "lonely", "sleepy", "hungry"] },
+            { title: "Golden Hour", videoId: "PEM0Vs8jf1w", start: 58, end: 75, lyric: "It was just two less _______.", answer: "lonely people", options: ["happy people", "lonely people", "angry people", "funny people"] },
+            { title: "Anti-Hero", videoId: "b7QlX3yR2xs", start: 40, end: 55, lyric: "It's me, hi, I'm the _______.", answer: "problem", options: ["teacher", "problem", "hero", "student"] },
+            { title: "Dynamite", videoId: "gdZLi9oWNZg", start: 30, end: 45, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
+            { title: "Levitating", videoId: "TUVcZfQe-Kw", start: 55, end: 70, lyric: "I believe that we're _______.", answer: "meant to be", options: ["dancing free", "meant to be", "in the sea", "flying high"] },
+            { title: "Bad Habits", videoId: "orJSJGHjBLI", start: 58, end: 72, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "the park"] },
+            { title: "Dance Monkey", videoId: "q0hyYWKXF0Q", start: 35, end: 50, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
+            { title: "Perfect", videoId: "2Vv-BfVoq4g", start: 60, end: 75, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
+            { title: "Shake It Off", videoId: "nfWlot6h_JM", start: 45, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "bake"] },
+            { title: "Count On Me", videoId: "6k8cpUkKK4c", start: 30, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "my best friend"] },
+            { title: "Shallow", videoId: "bo_efYhYU2A", start: 90, end: 105, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
+            { title: "Yummy", videoId: "8EJ3zhqeP9w", start: 35, end: 50, lyric: "You got that yummy, _______.", answer: "yummy", options: ["yummy", "honey", "funny", "sunny"] }
         ];
 
         let currentIndex = 0;
@@ -168,40 +110,14 @@
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                videoId: songs[currentIndex].videoId,
-                playerVars: {
-                    'autoplay': 1,
-                    'controls': 1,
-                    'start': songs[currentIndex].start,
-                    'end': songs[currentIndex].end,
-                    'modestbranding': 1,
-                    'rel': 0,
-                    'disablekb': 1
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
+                height: '100%', width: '100%', videoId: songs[currentIndex].videoId,
+                playerVars: { 'autoplay': 1, 'controls': 1, 'start': songs[currentIndex].start, 'end': songs[currentIndex].end, 'rel': 0 },
+                events: { 'onReady': () => { initUI(); loadTrack(); } }
             });
-        }
-
-        function onPlayerReady() {
-            initUI();
-            loadTrack();
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.ENDED && !isAnswered) {
-                player.seekTo(songs[currentIndex].start);
-                player.playVideo();
-            }
         }
 
         function initUI() {
             const dots = document.getElementById('progress-dots');
-            dots.innerHTML = '';
             songs.forEach((_, i) => {
                 const dot = document.createElement('div');
                 dot.className = 'dot';
@@ -213,32 +129,21 @@
         function loadTrack() {
             const song = songs[currentIndex];
             isAnswered = false;
-            
             document.getElementById('track-count').innerText = `Song ${currentIndex + 1} / ${songs.length}`;
-            document.getElementById('song-name').innerText = song.title;
-            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span id="blank" class="text-pink-400 border-b-4 border-pink-200 px-2 animate-pulse">_______</span>`);
+            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span id="blank" class="text-pink-400 border-b-2 border-pink-200 px-1 animate-pulse">_______</span>`);
             document.getElementById('status-msg').classList.add('hidden');
-
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             
-            const shuffled = [...song.options].sort(() => Math.random() - 0.5);
-            shuffled.forEach(opt => {
+            [...song.options].sort(() => Math.random() - 0.5).forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "macaroon-button bg-white p-6 rounded-3xl text-lg font-bold text-gray-700";
+                btn.className = "macaroon-button bg-white p-4 rounded-2xl font-bold text-gray-700";
                 btn.innerText = opt;
                 btn.onclick = () => checkAnswer(btn, opt);
                 container.appendChild(btn);
             });
 
-            // Sync Video
-            player.loadVideoById({
-                videoId: song.videoId,
-                startSeconds: song.start,
-                endSeconds: song.end
-            });
-
-            // Update dots
+            player.loadVideoById({ videoId: song.videoId, startSeconds: song.start, endSeconds: song.end });
             document.querySelectorAll('.dot').forEach((d, i) => {
                 d.classList.remove('active');
                 if(i === currentIndex) d.classList.add('active');
@@ -247,38 +152,21 @@
 
         function checkAnswer(btn, choice) {
             if(isAnswered) return;
-            const song = songs[currentIndex];
-            
-            if(choice === song.answer) {
+            if(choice === songs[currentIndex].answer) {
                 btn.classList.add('option-correct');
-                document.getElementById('blank').innerText = song.answer;
-                document.getElementById('blank').classList.remove('animate-pulse');
+                document.getElementById('blank').innerText = songs[currentIndex].answer;
                 document.getElementById(`dot-${currentIndex}`).classList.add('done');
                 document.getElementById('status-msg').classList.remove('hidden');
                 isAnswered = true;
-                
-                setTimeout(() => {
-                    if(currentIndex < songs.length - 1) nextTrack();
-                }, 2000);
+                setTimeout(() => { if(currentIndex < songs.length - 1) nextTrack(); }, 2000);
             } else {
                 btn.classList.add('option-wrong');
                 setTimeout(() => btn.classList.remove('option-wrong'), 500);
             }
         }
 
-        function nextTrack() {
-            if(currentIndex < songs.length - 1) {
-                currentIndex++;
-                loadTrack();
-            }
-        }
-
-        function prevTrack() {
-            if(currentIndex > 0) {
-                currentIndex--;
-                loadTrack();
-            }
-        }
+        function nextTrack() { if(currentIndex < songs.length - 1) { currentIndex++; loadTrack(); } }
+        function prevTrack() { if(currentIndex > 0) { currentIndex--; loadTrack(); } }
     </script>
 </body>
 </html>
