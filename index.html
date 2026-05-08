@@ -1,473 +1,284 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Song Challenge | Listening Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <title>Macaroon English Music Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #ff6b6b;
-            --secondary: #4ecdc4;
-            --accent: #ffe66d;
-            --bg: #f8f9fa;
-            --white: #ffffff;
-            --ai-purple: #d946ef;
-            --dark: #2d3436;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.3s ease; }
-
         body {
             font-family: 'Quicksand', sans-serif;
-            background-color: var(--bg);
+            background-color: #FFF9F0; /* Creamy White */
+            margin: 0;
+            overflow: hidden; /* Prevent body scroll for app feel */
+        }
+        
+        .side-panel {
             height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .presentation {
-            width: 95vw;
-            height: 90vh;
-            max-width: 1200px;
-            background: var(--white);
-            border-radius: 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-            position: relative;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        .progress-container {
-            width: 100%; height: 8px;
-            background: #eee; z-index: 100;
+        .bg-mint { background-color: #E6F7F5; }
+        .bg-strawberry { background-color: #FFF0F3; }
+        .bg-lemon { background-color: #FEFCE8; }
+        .bg-lavender { background-color: #F8F7FF; }
+        
+        .macaroon-button {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .progress-fill {
-            height: 100%; background: var(--primary); width: 0%;
+        
+        .macaroon-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
 
-        .slides-container {
-            flex: 1;
+        .option-correct {
+            background-color: #A7F3D0 !important;
+            border-color: #34D399 !important;
+            color: #065F46 !important;
+        }
+
+        .option-wrong {
+            background-color: #FECACA !important;
+            border-color: #F87171 !important;
+            color: #991B1B !important;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .video-container {
             position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
         }
 
-        .slide {
+        #player {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            padding: 20px 40px;
+        }
+
+        .progress-bar-container {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transform: translateX(50px);
-            visibility: hidden;
-            text-align: center;
-        }
-
-        .slide.active {
-            opacity: 1;
-            transform: translateX(0);
-            visibility: visible;
-        }
-
-        h1 { font-family: 'Fredoka', sans-serif; font-size: clamp(32px, 5vw, 64px); color: var(--primary); line-height: 1.1; margin-bottom: 10px; }
-        h2 { font-family: 'Fredoka', sans-serif; font-size: 32px; color: var(--secondary); margin-bottom: 10px; }
-        p.subtitle { font-size: 20px; color: #636e72; margin-bottom: 20px; }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            width: 100%;
-            max-width: 1000px;
-            align-items: center;
-        }
-
-        @media (max-width: 850px) {
-            .content-grid { grid-template-columns: 1fr; overflow-y: auto; padding-bottom: 20px; }
-            .slide { padding: 10px; }
-        }
-
-        .video-box {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        iframe { width: 100%; height: 100%; border: none; }
-
-        .interaction-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            text-align: left;
-        }
-
-        .quiz-card {
-            background: #f1f2f6;
-            padding: 20px;
-            border-radius: 15px;
-            border-left: 5px solid var(--secondary);
-        }
-
-        .quiz-title { font-weight: 700; font-size: 18px; margin-bottom: 10px; color: var(--dark); }
-
-        .option-btn {
+            gap: 6px;
+            padding: 10px;
             background: white;
-            border: 2px solid var(--secondary);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 5px;
-            display: inline-block;
-        }
-        .option-btn:hover { background: var(--accent); transform: translateY(-2px); }
-
-        .ai-hub {
-            background: #fdf4ff;
-            border: 2px dashed var(--ai-purple);
-            padding: 15px;
-            border-radius: 15px;
-        }
-        .ai-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .ai-input {
-            flex: 1;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-family: inherit;
-        }
-        .ai-btn {
-            background: var(--ai-purple);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .ai-btn.speak { background: #4b5563; }
-        .ai-response {
-            font-size: 13px;
-            color: #4b5563;
-            background: white;
-            padding: 8px;
-            border-radius: 8px;
-            min-height: 40px;
-            max-height: 80px;
-            overflow-y: auto;
+            border-radius: 99px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .controls {
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            background: #f8f9fa;
-        }
-        .nav-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 35px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .nav-btn:hover { transform: scale(1.05); }
-        .nav-btn.prev { background: #b2bec3; }
-
-        .loading-dots:after {
-            content: '.';
-            animation: dots 1.5s steps(5, end) infinite;
-        }
-        @keyframes dots {
-            0%, 20% { color: transparent; text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; }
-            40% { color: var(--ai-purple); text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; }
-            60% { text-shadow: .25em 0 0 var(--ai-purple), .5em 0 0 transparent; }
-            80%, 100% { text-shadow: .25em 0 0 var(--ai-purple), .5em 0 0 var(--ai-purple); }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #E5E7EB;
+            transition: all 0.3s;
         }
 
-        .bg-title { background: linear-gradient(135deg, #ff6b6b 0%, #ff9e7d 100%); color: white; }
-        .bg-title h1, .bg-title p { color: white; }
+        .dot.active { background: #FF9AA2; transform: scale(1.3); }
+        .dot.done { background: #B5EAD7; }
     </style>
 </head>
-<body>
+<body class="flex flex-col md:flex-row">
 
-<div class="presentation">
-    <div class="progress-container"><div class="progress-fill" id="progress"></div></div>
-
-    <div class="slides-container">
-        <!-- Title Slide -->
-        <div class="slide active bg-title" id="slide1">
-            <i class="fa-solid fa-music" style="font-size: 80px; margin-bottom: 20px;"></i>
-            <h1>English Music Challenge</h1>
-            <p class="subtitle">Trending in Taiwan (2023-2026)</p>
-            <p>Upload this to GitHub to share with your students!</p>
+    <!-- Left Side: Questions and UI -->
+    <div class="w-full md:w-1/2 side-panel bg-mint p-6 md:p-12 justify-between border-r-4 border-white">
+        
+        <!-- Header -->
+        <div class="flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-teal-600">🎵 Music Challenge</h1>
+                <div class="progress-bar-container" id="progress-dots"></div>
+            </div>
+            <p class="text-teal-800 opacity-70">Listen to the song and pick the right word!</p>
         </div>
 
-        <!-- Round 1: APT -->
-        <div class="slide" id="slide3">
-            <h2>Round 1: Viral Sensation</h2>
-            <p class="subtitle">"APT." - Rosé & Bruno Mars</p>
-            <div class="content-grid">
-                <div class="video-box">
-                    <iframe id="yt-1" src="https://www.youtube.com/embed/ekr2nIex040?start=45&end=65"></iframe>
-                </div>
-                <div class="interaction-panel">
-                    <div class="quiz-card">
-                        <p class="quiz-title">How many times do they say "A-pa-teu"?</p>
-                        <button class="option-btn" onclick="reveal('Correct! They say it 4 times in this clip!')">4 Times</button>
-                        <button class="option-btn" onclick="reveal('Try listening once more!')">2 Times</button>
-                    </div>
-                    <div class="ai-hub">
-                        <div class="ai-row">
-                            <input type="text" class="ai-input" placeholder="Explain a word..." id="ai-in-1">
-                            <button class="ai-btn" onclick="askGemini('APT.', 1)">✨ AI</button>
-                            <button class="ai-btn speak" onclick="speakLyric('A-pa-teu, a-pa-teu, a-pa-teu, a-pa-teu.')">🔊</button>
-                        </div>
-                        <div class="ai-response" id="ai-res-1">Need help? Ask Gemini!</div>
-                    </div>
-                </div>
+        <!-- Question Area -->
+        <div class="flex flex-col gap-8 flex-grow justify-center py-8">
+            <div class="bg-white p-10 rounded-[40px] shadow-sm border-4 border-white relative">
+                <span id="track-count" class="absolute -top-4 left-8 bg-pink-400 text-white px-4 py-1 rounded-full text-sm font-bold shadow-md">Song 1 / 15</span>
+                <h3 id="song-name" class="text-gray-400 text-sm mb-4 italic">Loading...</h3>
+                <p id="lyric-box" class="text-2xl md:text-3xl font-bold text-gray-700 leading-relaxed text-center">
+                   "Wait a minute, let me <span class="text-pink-400 border-b-4 border-pink-200 px-2">_______</span>."
+                </p>
+            </div>
+
+            <!-- Options Grid -->
+            <div id="options-container" class="grid grid-cols-2 gap-4">
+                <!-- Buttons injected by JS -->
             </div>
         </div>
 
-        <!-- Round 2: Elemental -->
-        <div class="slide" id="slide4">
-            <h2>Round 2: Movie Magic</h2>
-            <p class="subtitle">"Steal the Show" - Lauv</p>
-            <div class="content-grid">
-                <div class="video-box">
-                    <iframe id="yt-2" src="https://www.youtube.com/embed/SshZPhT27p8?start=55&end=75"></iframe>
-                </div>
-                <div class="interaction-panel">
-                    <div class="quiz-card">
-                        <p class="quiz-title">Fill in the missing word:</p>
-                        <p>"Started as a spark, now we're setting ______ to the dark."</p>
-                        <button class="option-btn" onclick="reveal('The answer is FIRE! 🔥')">Show Answer</button>
-                    </div>
-                    <div class="ai-hub">
-                        <div class="ai-row">
-                            <input type="text" class="ai-input" placeholder="What is 'spark'?" id="ai-in-2">
-                            <button class="ai-btn" onclick="askGemini('Elemental Steal the Show', 2)">✨ AI</button>
-                            <button class="ai-btn speak" onclick="speakLyric('Started as a spark, now we are setting fire to the dark.')">🔊</button>
-                        </div>
-                        <div class="ai-response" id="ai-res-2">Gemini can explain vocabulary!</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Round 3: Flowers -->
-        <div class="slide" id="slide5">
-            <h2>Round 3: Self-Confidence</h2>
-            <p class="subtitle">"Flowers" - Miley Cyrus</p>
-            <div class="content-grid">
-                <div class="video-box">
-                    <iframe id="yt-3" src="https://www.youtube.com/embed/G7KNmW9a75Y?start=60&end=82"></iframe>
-                </div>
-                <div class="interaction-panel">
-                    <div class="quiz-card">
-                        <p class="quiz-title">What is the FIRST thing she says she can do?</p>
-                        <button class="option-btn" onclick="reveal('Correct! I can buy myself flowers.')">A) Buy flowers</button>
-                        <button class="option-btn" onclick="reveal('Listen for the very first line!')">B) Write my name</button>
-                    </div>
-                    <div class="ai-hub">
-                        <div class="ai-row">
-                            <input type="text" class="ai-input" placeholder="Explain 'sand'..." id="ai-in-3">
-                            <button class="ai-btn" onclick="askGemini('Flowers', 3)">✨ AI</button>
-                            <button class="ai-btn speak" onclick="speakLyric('I can buy myself flowers, write my name in the sand.')">🔊</button>
-                        </div>
-                        <div class="ai-response" id="ai-res-3">AI will translate here.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Round 4: Seven -->
-        <div class="slide" id="slide6">
-            <h2>Round 4: Weekly Routine</h2>
-            <p class="subtitle">"Seven" - Jungkook</p>
-            <div class="content-grid">
-                <div class="video-box">
-                    <iframe id="yt-4" src="https://www.youtube.com/embed/QU9c0053UAU?start=68&end=88"></iframe>
-                </div>
-                <div class="interaction-panel">
-                    <div class="quiz-card">
-                        <p class="quiz-title">Challenge: Can you write the days in order?</p>
-                        <button class="option-btn" onclick="reveal('Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday!')">Check Order</button>
-                    </div>
-                    <div class="ai-hub">
-                        <div class="ai-row">
-                            <input type="text" class="ai-input" placeholder="Help..." id="ai-in-4">
-                            <button class="ai-btn" onclick="askGemini('Seven', 4)">✨ AI</button>
-                            <button class="ai-btn speak" onclick="speakLyric('Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday')">🔊</button>
-                        </div>
-                        <div class="ai-response" id="ai-res-4">AI knows the lyrics!</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Round 5: Super Shy -->
-        <div class="slide" id="slide7">
-            <h2>Round 5: Rhyme Time</h2>
-            <p class="subtitle">"Super Shy" - NewJeans</p>
-            <div class="content-grid">
-                <div class="video-box">
-                    <iframe id="yt-5" src="https://www.youtube.com/embed/n61XueS9Wig?start=35&end=55"></iframe>
-                </div>
-                <div class="interaction-panel">
-                    <div class="quiz-card">
-                        <p class="quiz-title">Which word rhymes with "Shy"?</p>
-                        <button class="option-btn" onclick="reveal('Yes! Shy and Eye rhyme! 👁️')">Eye</button>
-                        <button class="option-btn" onclick="reveal('No, See has a different sound.')">See</button>
-                    </div>
-                    <div class="ai-hub">
-                        <div class="ai-row">
-                            <input type="text" class="ai-input" placeholder="Define 'shy'..." id="ai-in-5">
-                            <button class="ai-btn" onclick="askGemini('Super Shy', 5)">✨ AI</button>
-                            <button class="ai-btn speak" onclick="speakLyric('I am super shy, super shy. But wait a minute while I make you mine.')">🔊</button>
-                        </div>
-                        <div class="ai-response" id="ai-res-5">AI definitions here.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Round 6: Cruel Summer -->
-        <div class="slide" id="slide8">
-            <h2>Round 6: The Bridge</h2>
-            <p class="subtitle">"Cruel Summer" - Taylor Swift</p>
-            <div class="content-grid">
-                <div class="video-box">
-                    <iframe id="yt-6" src="https://www.youtube.com/embed/ic8j13piAhQ?start=150&end=172"></iframe>
-                </div>
-                <div class="interaction-panel">
-                    <div class="quiz-card">
-                        <p class="quiz-title">Finish the line:</p>
-                        <p>"I love you, ain't that the ______ thing you ever heard?"</p>
-                        <button class="option-btn" onclick="reveal('Answer: WORST! 💔')">Show Answer</button>
-                    </div>
-                    <div class="ai-hub">
-                        <div class="ai-row">
-                            <input type="text" class="ai-input" placeholder="What is 'cruel'?" id="ai-in-6">
-                            <button class="ai-btn" onclick="askGemini('Cruel Summer', 6)">✨ AI</button>
-                            <button class="ai-btn speak" onclick="speakLyric('I love you, ain’t that the worst thing you ever heard?')">🔊</button>
-                        </div>
-                        <div class="ai-response" id="ai-res-6">AI response box.</div>
-                    </div>
-                </div>
-            </div>
+        <!-- Footer Navigation -->
+        <div class="flex justify-between items-center pt-4">
+            <button onclick="prevTrack()" class="macaroon-button bg-white text-teal-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
+                Back
+            </button>
+            <div id="status-msg" class="text-pink-500 font-bold hidden">Great Job! ⭐</div>
+            <button onclick="nextTrack()" class="macaroon-button bg-pink-100 text-pink-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
+                Next
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+            </button>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="nav-btn prev" onclick="moveSlide(-1)">Back</button>
-        <button class="nav-btn" onclick="moveSlide(1)">Next</button>
+    <!-- Right Side: Video -->
+    <div class="w-full md:w-1/2 side-panel bg-black">
+        <div class="video-container">
+            <div id="player"></div>
+        </div>
     </div>
-</div>
 
-<script>
-    let current = 0;
-    const slides = document.querySelectorAll('.slide');
-    const progress = document.getElementById('progress');
-    const apiKey = ""; 
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        const songs = [
+            { title: "Peaches - Justin Bieber", videoId: "pyWFE7qKR8I", start: 0, end: 15, lyric: "I get my peaches out in _______.", answer: "Georgia", options: ["Florida", "Georgia", "Taiwan", "London"] },
+            { title: "Flowers - Miley Cyrus", videoId: "G7KNmW9a75Y", start: 62, end: 75, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a car", "diamonds"] },
+            { title: "Stay - The Kid LAROI & Justin Bieber", videoId: "kTJczUoc26U", start: 35, end: 50, lyric: "I need you to stay, _______.", answer: "need you to stay", options: ["don't go away", "need you to stay", "I love you today", "won't you play"] },
+            { title: "Cupid - FIFTY FIFTY", videoId: "Qc7_zRjH808", start: 53, end: 68, lyric: "I'm feeling _______.", answer: "lonely", options: ["happy", "lonely", "sleepy", "hungry"] },
+            { title: "Golden Hour - JVKE", videoId: "PEM0Vs8jf1w", start: 58, end: 75, lyric: "It was just two less _______.", answer: "lonely people", options: ["happy people", "lonely people", "angry people", "funny people"] },
+            { title: "Anti-Hero - Taylor Swift", videoId: "b7QlX3yR2xs", start: 40, end: 55, lyric: "It's me, hi, I'm the _______, it's me.", answer: "problem", options: ["teacher", "problem", "hero", "student"] },
+            { title: "Dynamite - BTS", videoId: "gdZLi9oWNZg", start: 30, end: 45, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
+            { title: "Levitating - Dua Lipa", videoId: "TUVcZfQe-Kw", start: 55, end: 70, lyric: "I believe that we're _______.", answer: "meant to be", options: ["dancing free", "meant to be", "in the sea", "flying high"] },
+            { title: "Bad Habits - Ed Sheeran", videoId: "orJSJGHjBLI", start: 58, end: 72, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "the park"] },
+            { title: "Dance Monkey - Tones and I", videoId: "q0hyYWKXF0Q", start: 35, end: 50, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
+            { title: "Perfect - Ed Sheeran", videoId: "2Vv-BfVoq4g", start: 60, end: 75, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
+            { title: "Shake It Off - Taylor Swift", videoId: "nfWlot6h_JM", start: 45, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "bake"] },
+            { title: "Count On Me - Bruno Mars", videoId: "6k8cpUkKK4c", start: 30, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "my best friend"] },
+            { title: "Shallow - Lady Gaga", videoId: "bo_efYhYU2A", start: 90, end: 105, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
+            { title: "Yummy - Justin Bieber", videoId: "8EJ3zhqeP9w", start: 35, end: 50, lyric: "You got that yummy, _______.", answer: "yummy", options: ["yummy", "honey", "funny", "sunny"] }
+        ];
 
-    function moveSlide(n) {
-        slides[current].classList.remove('active');
-        current += n;
-        if (current >= slides.length) current = 0;
-        if (current < 0) current = slides.length - 1;
-        slides[current].classList.add('active');
-        updateProgress();
-    }
+        let currentIndex = 0;
+        let player;
+        let isAnswered = false;
 
-    function updateProgress() {
-        const p = ((current + 1) / slides.length) * 100;
-        progress.style.width = p + '%';
-    }
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: songs[currentIndex].videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 1,
+                    'start': songs[currentIndex].start,
+                    'end': songs[currentIndex].end,
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'disablekb': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
 
-    function reveal(text) {
-        const modal = document.createElement('div');
-        modal.style = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:30px;border-radius:20px;box-shadow:0 0 100px rgba(0,0,0,0.5);z-index:1000;text-align:center;border:5px solid var(--secondary);min-width:300px;";
-        modal.innerHTML = `<h3>Quiz Result</h3><p style="font-size:20px;margin:20px 0;">${text}</p><button class="nav-btn" onclick="this.parentElement.remove()">Continue</button>`;
-        document.body.appendChild(modal);
-    }
+        function onPlayerReady() {
+            initUI();
+            loadTrack();
+        }
 
-    async function callGemini(prompt, systemPrompt) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        const payload = {
-            contents: [{ parts: [{ text: prompt }] }],
-            systemInstruction: { parts: [{ text: systemPrompt }] }
-        };
-        try {
-            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            const result = await response.json();
-            return result.candidates?.[0]?.content?.parts?.[0]?.text || "No answer found.";
-        } catch (err) { return "Connect your API key for AI features."; }
-    }
-
-    async function askGemini(context, id) {
-        const input = document.getElementById(`ai-in-${id}`);
-        const output = document.getElementById(`ai-res-${id}`);
-        const word = input.value.trim();
-        if (!word) return;
-        output.innerHTML = `<span class="loading-dots">✨ AI Analyzing</span>`;
-        const sys = `English teacher. Explain ${word} from song ${context} to a middle school student. Include Chinese translation.`;
-        const res = await callGemini(`Explain: ${word}`, sys);
-        output.innerText = res;
-    }
-
-    async function speakLyric(text) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-        const payload = {
-            contents: [{ parts: [{ text: `Say this lyric slowly: ${text}` }] }],
-            generationConfig: { 
-                responseModalities: ["AUDIO"], 
-                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } } } 
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.ENDED && !isAnswered) {
+                player.seekTo(songs[currentIndex].start);
+                player.playVideo();
             }
-        };
-        try {
-            const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
-            const result = await response.json();
-            const data = result.candidates[0].content.parts[0].inlineData.data;
-            playAudio(data);
-        } catch (e) {}
-    }
+        }
 
-    function playAudio(base64) {
-        const binary = atob(base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const header = new Uint8Array(44);
-        const dv = new DataView(header.buffer);
-        dv.setUint32(0, 0x52494646, false); dv.setUint32(4, 36 + bytes.length, true);
-        dv.setUint32(8, 0x57415645, false); dv.setUint32(12, 0x666d7420, false);
-        dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
-        dv.setUint32(24, 24000, true); dv.setUint32(28, 48000, true);
-        dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
-        dv.setUint32(36, 0x64617461, false); dv.setUint32(40, bytes.length, true);
-        const blob = new Blob([header, bytes], { type: 'audio/wav' });
-        new Audio(URL.createObjectURL(blob)).play();
-    }
-    
-    updateProgress();
-</script>
+        function initUI() {
+            const dots = document.getElementById('progress-dots');
+            dots.innerHTML = '';
+            songs.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.id = `dot-${i}`;
+                dots.appendChild(dot);
+            });
+        }
+
+        function loadTrack() {
+            const song = songs[currentIndex];
+            isAnswered = false;
+            
+            document.getElementById('track-count').innerText = `Song ${currentIndex + 1} / ${songs.length}`;
+            document.getElementById('song-name').innerText = song.title;
+            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span id="blank" class="text-pink-400 border-b-4 border-pink-200 px-2 animate-pulse">_______</span>`);
+            document.getElementById('status-msg').classList.add('hidden');
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            const shuffled = [...song.options].sort(() => Math.random() - 0.5);
+            shuffled.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "macaroon-button bg-white p-6 rounded-3xl text-lg font-bold text-gray-700";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(btn, opt);
+                container.appendChild(btn);
+            });
+
+            // Sync Video
+            player.loadVideoById({
+                videoId: song.videoId,
+                startSeconds: song.start,
+                endSeconds: song.end
+            });
+
+            // Update dots
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.classList.remove('active');
+                if(i === currentIndex) d.classList.add('active');
+            });
+        }
+
+        function checkAnswer(btn, choice) {
+            if(isAnswered) return;
+            const song = songs[currentIndex];
+            
+            if(choice === song.answer) {
+                btn.classList.add('option-correct');
+                document.getElementById('blank').innerText = song.answer;
+                document.getElementById('blank').classList.remove('animate-pulse');
+                document.getElementById(`dot-${currentIndex}`).classList.add('done');
+                document.getElementById('status-msg').classList.remove('hidden');
+                isAnswered = true;
+                
+                setTimeout(() => {
+                    if(currentIndex < songs.length - 1) nextTrack();
+                }, 2000);
+            } else {
+                btn.classList.add('option-wrong');
+                setTimeout(() => btn.classList.remove('option-wrong'), 500);
+            }
+        }
+
+        function nextTrack() {
+            if(currentIndex < songs.length - 1) {
+                currentIndex++;
+                loadTrack();
+            }
+        }
+
+        function prevTrack() {
+            if(currentIndex > 0) {
+                currentIndex--;
+                loadTrack();
+            }
+        }
+    </script>
 </body>
 </html>
