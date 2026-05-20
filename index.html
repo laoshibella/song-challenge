@@ -11,22 +11,22 @@
         .video-container { width: 100%; height: 100%; background: #000; position: relative; }
         #player { width: 100%; height: 100%; }
         .option-btn { transition: all 0.2s; border: 4px solid white; cursor: pointer; }
-        .option-correct { background-color: #34D399 !important; color: white !important; }
-        .option-wrong { background-color: #F87171 !important; color: white !important; }
+        .option-correct { background-color: #34D399 !important; color: white !important; border-color: #059669 !important; }
+        .option-wrong { background-color: #F87171 !important; color: white !important; border-color: #DC2626 !important; }
     </style>
 </head>
 <body>
 
     <div class="side-panel p-8 justify-center border-r-8 border-white bg-blue-50 overflow-y-auto">
-        <h1 class="text-3xl font-bold text-blue-600 mb-8">🎶 Pop Quiz Challenge</h1>
+        <h1 class="text-3xl font-bold text-blue-600 mb-6">🎶 Pop Quiz Challenge</h1>
         <div id="game-ui" class="flex flex-col gap-6">
-            <div id="question-box" class="bg-white p-8 rounded-[40px] shadow-xl border-4 border-white">
-                <span id="track-count" class="text-sm font-bold text-blue-500">Ready?</span>
-                <p id="lyric-box" class="text-xl font-bold text-gray-800 italic mt-4 mb-6">Click Start to begin.</p>
-                <button id="play-btn" onclick="playSnippet()" class="hidden bg-emerald-500 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-emerald-600">Replay Snippet 🎵</button>
+            <div id="question-box" class="bg-white p-10 rounded-[40px] shadow-2xl border-4 border-white">
+                <span id="track-count" class="text-lg font-bold text-blue-500">Ready?</span>
+                <p id="lyric-box" class="text-4xl leading-tight font-extrabold text-gray-900 italic mt-6 mb-8">Click Start to begin.</p>
+                <button id="play-btn" onclick="playSnippet()" class="hidden bg-emerald-500 text-white px-10 py-4 rounded-full font-bold text-xl shadow-lg hover:bg-emerald-600 transition-all">Replay Snippet 🎵</button>
             </div>
             <div id="options-container" class="grid grid-cols-2 gap-4">
-                <button onclick="startApp()" class="col-span-2 bg-blue-600 text-white p-6 rounded-3xl font-bold text-2xl shadow-xl hover:bg-blue-700">START CHALLENGE 🚀</button>
+                <button id="start-btn" onclick="startApp()" class="col-span-2 bg-blue-600 text-white p-8 rounded-3xl font-bold text-3xl shadow-xl hover:bg-blue-700">START CHALLENGE 🚀</button>
             </div>
         </div>
     </div>
@@ -37,6 +37,7 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+        // Times converted to total seconds for logic:
         const songs = [
             { title: "Flowers", videoId: "G7KNmW9a75Y", start: 8, end: 40, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a ring", "diamonds"] },
             { title: "Golden Hour", videoId: "PEM0Vs8jf1w", start: 5, end: 25, lyric: "It was just two _______.", answer: "lovers", options: ["lovers", "friends", "enemies", "teachers"] },
@@ -46,45 +47,37 @@
             { title: "Bad Habits", videoId: "orJSJGHjBLI", start: 85, end: 100, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "nothing"] },
             { title: "Dance Monkey", videoId: "q0hyYWKXF0Q", start: 110, end: 130, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
             { title: "Perfect", videoId: "2Vv-BfVoq4g", start: 75, end: 100, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
-            { title: "Shake It Off", videoId: "nfWlot6h_JM", start: 37, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "fake"] },
-            { title: "Count On Me", videoId: "6k8cpUkKK4c", start: 20, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "4 5 6"] },
-            { title: "Shallow", videoId: "bo_efYhYU2A", start: 60, end: 85, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
-            { title: "As It Was", videoId: "H5v3kku4y6Q", start: 15, end: 35, lyric: "In this world, it's just _______.", answer: "us", options: ["us", "you", "me", "them"] },
-            { title: "Blinding Lights", videoId: "4NRXx6U8ABQ", start: 20, end: 40, lyric: "I'm blinded by the _______.", answer: "lights", options: ["lights", "night", "stars", "fights"] },
+            { title: "Shallow", videoId: "bo_efYhYU2A", start: 115, end: 130, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
+            { title: "As It Was", videoId: "H5v3kku4y6Q", start: 75, end: 95, lyric: "In this world, it's just _______.", answer: "us", options: ["us", "you", "me", "them"] },
+            { title: "Blinding Lights", videoId: "4NRXx6U8ABQ", start: 80, end: 100, lyric: "I'm blinded by the _______.", answer: "lights", options: ["lights", "night", "stars", "fights"] },
             { title: "Espresso", videoId: "veP3e4R7-wY", start: 20, end: 45, lyric: "That's that me _______.", answer: "espresso", options: ["latte", "cappuccino", "espresso", "mocha"] },
-            { title: "Watermelon Sugar", videoId: "E07s5ZYygMg", start: 25, end: 45, lyric: "Tastes like _______ sugar.", answer: "watermelon", options: ["strawberry", "cherry", "watermelon", "peach"] }
+            { title: "Watermelon Sugar", videoId: "E07s5ZYygMg", start: 5, end: 30, lyric: "Tastes like _______ on a summer evenin.", answer: "strawberries", options: ["blueberries", "strawberries", "watermelon", "cherry"] }
         ];
 
         let currentIndex = 0, player;
         function onYouTubeIframeAPIReady() { player = new YT.Player('player', { height: '100%', width: '100%' }); }
-        function startApp() { document.getElementById('play-btn').classList.remove('hidden'); loadTrack(); }
+        function startApp() { document.getElementById('play-btn').classList.remove('hidden'); document.getElementById('start-btn').classList.add('hidden'); loadTrack(); }
 
         function loadTrack() {
             if (currentIndex >= songs.length) {
-                document.getElementById('question-box').innerHTML = `
-                    <div class="text-center py-10">
-                        <h2 class="text-5xl mb-4">🎉</h2>
-                        <h2 class="text-3xl font-bold text-emerald-600">Congratulations!</h2>
-                        <p class="text-lg text-gray-600 mt-2">You nailed all 15 songs!</p>
-                    </div>`;
-                document.getElementById('options-container').innerHTML = `
-                    <button onclick="location.reload()" class="col-span-2 bg-blue-600 text-white p-6 rounded-3xl font-bold text-xl hover:bg-blue-700">PLAY AGAIN 🔄</button>`;
+                document.getElementById('question-box').innerHTML = `<h2 class="text-5xl font-bold text-emerald-600">Challenge Complete!</h2>`;
+                document.getElementById('options-container').innerHTML = `<button onclick="location.reload()" class="col-span-2 bg-blue-600 text-white p-8 rounded-3xl font-bold text-2xl">PLAY AGAIN 🔄</button>`;
                 return;
             }
             const song = songs[currentIndex];
-            document.getElementById('track-count').innerText = `Song ${currentIndex + 1} of 15`;
-            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span class="text-blue-500 border-b-4 border-blue-300 font-bold px-2">_______</span>`);
+            document.getElementById('track-count').innerText = `Song ${currentIndex + 1} of ${songs.length}`;
+            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span class="text-blue-500 border-b-8 border-blue-300 font-extrabold px-3">_______</span>`);
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             song.options.forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "option-btn bg-white p-6 rounded-3xl font-bold text-gray-700 shadow-md";
+                btn.className = "option-btn bg-white p-8 rounded-3xl font-bold text-xl text-gray-800 shadow-md";
                 btn.innerText = opt;
                 btn.onclick = () => { 
                     if(opt === song.answer) { 
                         btn.classList.add('option-correct'); 
-                        setTimeout(() => { currentIndex++; loadTrack(); }, 600); 
-                    } else { btn.classList.add('option-wrong'); setTimeout(() => btn.classList.remove('option-wrong'), 400); } 
+                        setTimeout(() => { currentIndex++; loadTrack(); }, 700); 
+                    } else { btn.classList.add('option-wrong'); setTimeout(() => btn.classList.remove('option-wrong'), 500); } 
                 };
                 container.appendChild(btn);
             });
