@@ -76,12 +76,22 @@
             <div class="flex gap-2" id="progress-dots"></div>
         </div>
 
-        <div class="flex flex-col gap-8 flex-grow justify-center max-w-xl mx-auto w-full">
-            <div class="bg-white p-10 rounded-[40px] shadow-xl border-4 border-white relative">
+        <div class="flex flex-col gap-6 flex-grow justify-center max-w-xl mx-auto w-full">
+            <div class="bg-white p-8 rounded-[40px] shadow-xl border-4 border-white relative flex flex-col items-center">
                 <span id="track-count" class="absolute -top-4 left-8 bg-blue-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">Press Start</span>
-                <p id="lyric-box" class="text-2xl md:text-3xl font-bold text-gray-800 leading-relaxed text-center italic">
+                
+                <p id="lyric-box" class="text-2xl md:text-3xl font-bold text-gray-800 leading-relaxed text-center italic mt-4 mb-6">
                    Ready for some music?
                 </p>
+
+                <!-- Dedicated Play Button (hidden until started) -->
+                <button id="play-btn" onclick="playSnippet()" class="hidden bg-emerald-500 text-white hover:bg-emerald-600 px-8 py-3 rounded-full font-bold shadow-lg transition-all flex items-center gap-2 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Play Song 🎵</span>
+                </button>
             </div>
 
             <div id="options-container" class="grid grid-cols-2 gap-4">
@@ -113,8 +123,7 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        // Official Music Videos
-        // Customized Playback Timestamps as requested
+        // Official Music Videos with Precise Custom Timestamps
         const songs = [
             { title: "Peaches", videoId: "Pyme6maafpM", start: 5, end: 20, lyric: "I get my peaches out in _______.", answer: "Georgia", options: ["Florida", "Georgia", "California", "London"] },
             { title: "Flowers", videoId: "G7KNmW9a75Y", start: 8, end: 40, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a ring", "diamonds"] },
@@ -122,11 +131,11 @@
             { title: "Cupid", videoId: "qH-I_vT9b9U", start: 11, end: 30, lyric: "I'm feeling _______.", answer: "lonely", options: ["happy", "lonely", "pretty", "hungry"] },
             { title: "Golden Hour", videoId: "PEM0Vs8jf1w", start: 5, end: 18, lyric: "It was just two _______.", answer: "lovers", options: ["lovers", "friends", "enemies", "teachers"] },
             { title: "Anti-Hero", videoId: "b1kbLwvqugk", start: 40, end: 60, lyric: "It's me, hi, I'm the _______.", answer: "problem", options: ["hero", "problem", "villain", "doctor"] },
-            { title: "Dynamite", videoId: "gdZLi9oWNZg", start: 70, end: 80, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
+            { title: "Dynamite", videoId: "gdZLi9oWNZg", start: 70, end: 90, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
             { title: "Levitating", videoId: "TUVcZfQe-Kw", start: 15, end: 35, lyric: "My sugarboo, I'm _______.", answer: "levitating", options: ["levitating", "dancing free", "meant to be", "flying high"] },
             { title: "Bad Habits", videoId: "orJSJGHjBLI", start: 85, end: 100, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "nothing"] },
             { title: "Dance Monkey", videoId: "q0hyYWKXF0Q", start: 110, end: 130, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
-            { title: "Perfect", videoId: "2Vv-BfVoq4g", start: 75, end: 90, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
+            { title: "Perfect", videoId: "2Vv-BfVoq4g", start: 75, end: 100, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
             { title: "Shake It Off", videoId: "nfWlot6h_JM", start: 37, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "fake"] },
             { title: "Count On Me", videoId: "6k8cpUkKK4c", start: 20, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "4 5 6"] },
             { title: "Shallow", videoId: "bo_efYhYU2A", start: 115, end: 130, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
@@ -137,13 +146,14 @@
         let player;
         let isAnswered = false;
         let hasStarted = false;
+        let checkInterval;
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 playerVars: { 
-                    'autoplay': 1, 
+                    'autoplay': 0, // Enforce no auto-start
                     'controls': 0, 
                     'modestbranding': 1, 
                     'rel': 0,
@@ -160,6 +170,8 @@
 
         function onPlayerReady() {
             initProgress();
+            // Start checking the video boundaries
+            checkInterval = setInterval(enforceTimeBounds, 250);
         }
 
         function onPlayerError(e) {
@@ -169,14 +181,31 @@
             
             setTimeout(() => {
                 errEl.style.display = 'none';
-                nextTrack(); // Auto skip to functional video
+                nextTrack(); // Auto skip to next video if error occurs
             }, 3500);
         }
 
         function onPlayerStateChange(event) {
-            // If it finishes playing the segment, loop back to the start point
+            // Loop segment if user hits replay or let it auto-loop when ended
             if (event.data === YT.PlayerState.ENDED) {
                 player.seekTo(songs[currentIndex].start);
+                player.playVideo();
+            }
+        }
+
+        function enforceTimeBounds() {
+            if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                const currentTime = player.getCurrentTime();
+                const song = songs[currentIndex];
+                if (currentTime >= song.end) {
+                    player.pauseVideo();
+                    player.seekTo(song.start);
+                }
+            }
+        }
+
+        function playSnippet() {
+            if (player && player.playVideo) {
                 player.playVideo();
             }
         }
@@ -194,6 +223,7 @@
 
         function startApp() {
             hasStarted = true;
+            document.getElementById('play-btn').classList.remove('hidden');
             loadTrack();
         }
 
@@ -218,14 +248,14 @@
                 container.appendChild(btn);
             });
 
-            // Load official video with both start and end bounds
-            player.loadVideoById({
+            // Cue the video (This loads, but does NOT play, preventing autoplay)
+            player.cueVideoById({
                 videoId: song.videoId,
                 startSeconds: song.start,
                 endSeconds: song.end
             });
 
-            // Update dots
+            // Update progress dots
             document.querySelectorAll('.dot').forEach((d, i) => {
                 d.classList.remove('active');
                 if(i === currentIndex) d.classList.add('active');
@@ -243,6 +273,11 @@
                 document.getElementById(`dot-${currentIndex}`).classList.add('done');
                 document.getElementById('status-msg').classList.remove('hidden');
                 
+                // Stop player upon correct answer
+                if (player && player.pauseVideo) {
+                    player.pauseVideo();
+                }
+
                 // Auto-advance after 3 seconds
                 setTimeout(() => { 
                     if(currentIndex < songs.length - 1) {
@@ -260,6 +295,7 @@
 
         function finishGame() {
             document.getElementById('lyric-box').innerHTML = "🎉 <br> You're a Music Master!";
+            document.getElementById('play-btn').classList.add('hidden');
             document.getElementById('options-container').innerHTML = `
                 <button onclick="location.reload()" class="col-span-2 bg-green-500 text-white p-8 rounded-3xl font-bold text-2xl shadow-xl hover:bg-green-600">
                     PLAY AGAIN 🔄
