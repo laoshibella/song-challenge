@@ -113,8 +113,8 @@
         <div class="video-container">
             <div id="error-display" class="error-overlay">
                 <div class="text-4xl mb-4">🔇</div>
-                <h2 class="text-xl font-bold mb-2">Video Unavailable</h2>
-                <p class="text-gray-400 mb-4">This official video has playback restrictions. Skipping to the next track...</p>
+                <h2 id="error-title" class="text-xl font-bold mb-2">Video Unavailable</h2>
+                <p id="error-desc" class="text-gray-400 mb-4">Moving this song to the end of the challenge...</p>
                 <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
             <div id="player"></div>
@@ -171,7 +171,7 @@
         }
 
         function onPlayerReady() {
-            initProgress();
+            updateDots();
             // Start checking the video boundaries
             checkInterval = setInterval(enforceTimeBounds, 250);
         }
@@ -179,12 +179,37 @@
         function onPlayerError(e) {
             console.warn("YouTube Playback Error:", e.data);
             const errEl = document.getElementById('error-display');
-            errEl.style.display = 'flex';
-            
-            setTimeout(() => {
-                errEl.style.display = 'none';
-                nextTrack(); // Auto skip to next video if error occurs
-            }, 3500);
+            const errTitle = document.getElementById('error-title');
+            const errDesc = document.getElementById('error-desc');
+            const song = songs[currentIndex];
+
+            // If the song has already been moved once, or it's already the very last song, we skip it
+            if (song.moved || currentIndex === songs.length - 1) {
+                errTitle.innerText = "Video Restricted";
+                errDesc.innerText = "This official video has playback restrictions. Skipping track...";
+                errEl.style.display = 'flex';
+                
+                setTimeout(() => {
+                    errEl.style.display = 'none';
+                    nextTrack(); 
+                }, 3500);
+            } else {
+                // Otherwise, mark it as moved and append it to the end of the game
+                song.moved = true;
+                errTitle.innerText = "Video Loading Issue";
+                errDesc.innerText = `Moving "${song.title}" to the end of the challenge list...`;
+                errEl.style.display = 'flex';
+
+                // Reposition the song in the array
+                songs.splice(currentIndex, 1);
+                songs.push(song);
+
+                setTimeout(() => {
+                    errEl.style.display = 'none';
+                    // Load the track at the same index (which now has the next song)
+                    loadTrack();
+                }, 3500);
+            }
         }
 
         function onPlayerStateChange(event) {
@@ -218,13 +243,15 @@
             }
         }
 
-        function initProgress() {
+        function updateDots() {
             const dots = document.getElementById('progress-dots');
             dots.innerHTML = '';
-            songs.forEach((_, i) => {
+            songs.forEach((song, i) => {
                 const dot = document.createElement('div');
                 dot.className = 'dot';
                 dot.id = `dot-${i}`;
+                if (i === currentIndex) dot.classList.add('active');
+                if (song.done) dot.classList.add('done');
                 dots.appendChild(dot);
             });
         }
@@ -256,18 +283,15 @@
                 container.appendChild(btn);
             });
 
-            // Cue the video thumbnail passively (no autoplay)
+            // Cue the video passively
             player.cueVideoById({
                 videoId: song.videoId,
                 startSeconds: song.start,
                 endSeconds: song.end
             });
 
-            // Update progress dots
-            document.querySelectorAll('.dot').forEach((d, i) => {
-                d.classList.remove('active');
-                if(i === currentIndex) d.classList.add('active');
-            });
+            // Dynamically refresh progress bar dots
+            updateDots();
         }
 
         function checkAnswer(btn, choice) {
@@ -278,7 +302,8 @@
                 isAnswered = true;
                 btn.classList.add('option-correct');
                 document.getElementById('blank').innerText = song.answer;
-                document.getElementById(`dot-${currentIndex}`).classList.add('done');
+                song.done = true; // Mark song as successfully answered
+                updateDots(); // Refresh dot state
                 document.getElementById('status-msg').classList.remove('hidden');
                 
                 // Stop player upon correct answer
