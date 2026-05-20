@@ -158,7 +158,9 @@
                     'modestbranding': 1, 
                     'rel': 0,
                     'iv_load_policy': 3,
-                    'disablekb': 1
+                    'disablekb': 1,
+                    'enablejsapi': 1,
+                    'origin': window.location.origin // Crucial for iframe API inside sandboxed workspaces
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -188,8 +190,7 @@
         function onPlayerStateChange(event) {
             // Loop segment if user hits replay or let it auto-loop when ended
             if (event.data === YT.PlayerState.ENDED) {
-                player.seekTo(songs[currentIndex].start);
-                player.playVideo();
+                playSnippet();
             }
         }
 
@@ -205,8 +206,14 @@
         }
 
         function playSnippet() {
-            if (player && player.playVideo) {
-                player.playVideo();
+            if (player && player.loadVideoById) {
+                const song = songs[currentIndex];
+                // Using active loadVideoById to force immediate direct user-gesture playback authorization
+                player.loadVideoById({
+                    videoId: song.videoId,
+                    startSeconds: song.start,
+                    endSeconds: song.end
+                });
             }
         }
 
@@ -248,7 +255,7 @@
                 container.appendChild(btn);
             });
 
-            // Cue the video (This loads, but does NOT play, preventing autoplay)
+            // Cue the video thumbnail passively
             player.cueVideoById({
                 videoId: song.videoId,
                 startSeconds: song.start,
