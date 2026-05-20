@@ -55,19 +55,19 @@
             { title: "As It Was", videoId: "H5v3kku4y6Q", start: 90, end: 115, lyric: "In this world, it's just _______.", answer: "us", options: ["us", "you", "me", "them"] },
             { title: "Blinding Lights", videoId: "4NRXx6U8ABQ", start: 75, end: 105, lyric: "I'm blinded by the _______.", answer: "lights", options: ["lights", "night", "stars", "fights"] },
             { title: "Heat Waves", videoId: "mAKsZ26SabQ", start: 10, end: 30, lyric: "Sometimes all I think about is _______.", answer: "you", options: ["you", "love", "life", "home"] },
-            { title: "Watermelon Sugar", videoId: "E07s5ZYygMg", start: 25, end: 45, lyric: "Tastes like _______ sugar.", answer: "watermelon", options: ["strawberry", "cherry", "watermelon", "peach"] }
+            { title: "Watermelon Sugar", videoId: "E07s5ZYygMg", start: 5, end: 30, lyric: "Tastes like _______ on a summer evenin", answer: "strawberries", options: ["strawberries", "watermelon", "cherry", "peach"] }
         ];
 
-        let currentIndex = 0, player, hasStarted = false;
+        let currentIndex = 0, player;
 
         function onYouTubeIframeAPIReady() { player = new YT.Player('player', { height: '100%', width: '100%' }); }
 
-        function startApp() { hasStarted = true; document.getElementById('play-btn').classList.remove('hidden'); loadTrack(); }
+        function startApp() { document.getElementById('play-btn').classList.remove('hidden'); loadTrack(); }
 
         function loadTrack() {
             const song = songs[currentIndex];
             document.getElementById('track-count').innerText = `Challenge ${currentIndex + 1} / ${songs.length}`;
-            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span class="text-blue-500 border-b-4 border-blue-200 px-2">_______</span>`);
+            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span class="text-blue-500 border-b-4 border-blue-200 px-2 italic">_______</span>`);
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             [...song.options].sort(() => Math.random() - 0.5).forEach(opt => {
