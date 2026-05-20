@@ -5,89 +5,408 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Official Music Video Challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; background-color: #f0f4f8; margin: 0; height: 100vh; display: flex; overflow: hidden; }
-        .side-panel { height: 100vh; display: flex; flex-direction: column; width: 50%; }
-        .video-container { width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
-        #player-wrapper { width: 100%; height: 100%; }
-        .option-correct { background-color: #34D399 !important; color: white !important; }
-        .option-wrong { background-color: #F87171 !important; color: white !important; }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .side-panel {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+        }
+
+        .bg-soft-blue { background-color: #e0f2fe; }
+        
+        .macaroon-button {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 4px solid white;
+            cursor: pointer;
+        }
+        
+        .macaroon-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-correct { background-color: #34D399 !important; color: white !important; border-color: #059669 !important; }
+        .option-wrong { background-color: #F87171 !important; color: white !important; border-color: #DC2626 !important; animation: shake 0.4s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .video-container { position: relative; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; }
+        #player { width: 100%; height: 100%; pointer-events: none; }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; transition: all 0.3s; }
+        .dot.active { background: #3b82f6; transform: scale(1.4); }
+        .dot.done { background: #10b981; }
+
+        .error-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            z-index: 50;
+        }
     </style>
 </head>
 <body>
 
-    <div class="side-panel bg-white p-8 border-r border-gray-200">
-        <h1 class="text-2xl font-bold mb-4">🎵 Music Challenge</h1>
-        <div id="lyric-box" class="text-xl font-medium mb-6 p-6 bg-gray-100 rounded-xl">Press Start to begin.</div>
-        <div id="options-container" class="grid grid-cols-2 gap-3 mb-6"></div>
-        <button id="start-btn" onclick="startApp()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700">START CHALLENGE</button>
+    <!-- Left side: Questions -->
+    <div class="side-panel bg-soft-blue p-8 justify-between border-r-8 border-white">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <h1 class="text-3xl font-bold text-blue-600">🎧 Pop Quiz</h1>
+                <!-- Full Screen Toggle Button -->
+                <button onclick="toggleFullscreen()" class="macaroon-button bg-white text-blue-600 p-2.5 rounded-full font-bold shadow-md hover:bg-blue-50 transition-all flex items-center justify-center" title="Toggle Fullscreen">
+                    <svg id="fullscreen-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                </button>
+            </div>
+            <div class="flex gap-2" id="progress-dots"></div>
+        </div>
+
+        <div class="flex flex-col gap-6 flex-grow justify-center max-w-xl mx-auto w-full">
+            <div class="bg-white p-8 rounded-[40px] shadow-xl border-4 border-white relative flex flex-col items-center">
+                <span id="track-count" class="absolute -top-4 left-8 bg-blue-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">Press Start</span>
+                
+                <p id="lyric-box" class="text-2xl md:text-3xl font-bold text-gray-800 leading-relaxed text-center italic mt-4 mb-6">
+                   Ready for some music?
+                </p>
+
+                <!-- Dedicated Play Button (hidden until started) -->
+                <button id="play-btn" onclick="playSnippet()" class="hidden bg-emerald-500 text-white hover:bg-emerald-600 px-8 py-3 rounded-full font-bold shadow-lg transition-all flex items-center gap-2 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Play Song 🎵</span>
+                </button>
+            </div>
+
+            <div id="options-container" class="grid grid-cols-2 gap-4">
+                <button onclick="startApp()" class="col-span-2 bg-blue-600 text-white p-8 rounded-3xl font-bold text-3xl shadow-xl hover:bg-blue-700 transition-all">
+                    START 🎶
+                </button>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center px-4">
+            <button onclick="prevTrack()" class="macaroon-button bg-white text-gray-400 px-8 py-4 rounded-2xl font-bold">Previous</button>
+            <div id="status-msg" class="text-green-600 font-bold text-xl hidden">Correct! 🌟</div>
+            <button onclick="skipAndMoveToEnd()" class="macaroon-button bg-blue-100 text-blue-600 px-8 py-4 rounded-2xl font-bold">Skip</button>
+        </div>
     </div>
 
+    <!-- Right side: Video Player -->
     <div class="side-panel">
-        <div class="video-container" id="video-area">
-            <div id="player-wrapper"></div>
-            <div id="overlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white p-6 text-center cursor-pointer" onclick="initVideo()">
-                <p class="text-lg font-bold">Click here to enable video playback</p>
+        <div class="video-container">
+            <div id="error-display" class="error-overlay">
+                <div class="text-4xl mb-4">🔇</div>
+                <h2 id="error-title" class="text-xl font-bold mb-2">Video Unavailable</h2>
+                <p id="error-desc" class="text-gray-400 mb-4">Moving this song to the end of the challenge...</p>
+                <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
+            <div id="player"></div>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+        // Official Music Videos with Precise Custom Timestamps
         const songs = [
-            { title: "Defying Gravity", videoId: "67Q9Jv3-vM0", start: 140, end: 160, lyric: "It's time to try, defying _______.", answer: "gravity", options: ["gravity", "the odds", "logic", "reality"] },
-            { title: "Flowers", videoId: "G7KNmW9a75Y", start: 8, end: 40, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a ring", "diamonds"] }
+            { title: "Peaches", videoId: "Pyme6maafpM", start: 5, end: 20, lyric: "I get my peaches out in _______.", answer: "Georgia", options: ["Florida", "Georgia", "California", "London"] },
+            { title: "Flowers", videoId: "G7KNmW9a75Y", start: 8, end: 40, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a ring", "diamonds"] },
+            { title: "Stay", videoId: "yS7Zp86G0Ok", start: 30, end: 50, lyric: "I need you to stay, _______.", answer: "need you to stay", options: ["don't go away", "need you to stay", "please don't stay", "I'll be okay"] },
+            { title: "Cupid", videoId: "qH-I_vT9b9U", start: 11, end: 30, lyric: "I'm feeling _______.", answer: "lonely", options: ["happy", "lonely", "pretty", "hungry"] },
+            { title: "Golden Hour", videoId: "PEM0Vs8jf1w", start: 5, end: 25, lyric: "It was just two _______.", answer: "lovers", options: ["lovers", "friends", "enemies", "teachers"] },
+            { title: "Anti-Hero", videoId: "b1kbLwvqugk", start: 40, end: 60, lyric: "It's me, hi, I'm the _______.", answer: "problem", options: ["hero", "problem", "villain", "doctor"] },
+            { title: "Dynamite", videoId: "gdZLi9oWNZg", start: 70, end: 90, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
+            { title: "Levitating", videoId: "TUVcZfQe-Kw", start: 15, end: 35, lyric: "My sugarboo, I'm _______.", answer: "levitating", options: ["levitating", "dancing free", "meant to be", "flying high"] },
+            { title: "Bad Habits", videoId: "orJSJGHjBLI", start: 85, end: 100, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "nothing"] },
+            { title: "Dance Monkey", videoId: "q0hyYWKXF0Q", start: 110, end: 130, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
+            { title: "Perfect", videoId: "2Vv-BfVoq4g", start: 75, end: 100, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
+            { title: "Shake It Off", videoId: "nfWlot6h_JM", start: 37, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "fake"] },
+            { title: "Count On Me", videoId: "6k8cpUkKK4c", start: 20, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "4 5 6"] },
+            { title: "Shallow", videoId: "bo_efYhYU2A", start: 115, end: 130, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
+            { title: "Yummy", videoId: "8EJ3zhqeP9w", start: 20, end: 40, lyric: "You got that yummy, _______.", answer: "yummy", options: ["yummy", "honey", "funny", "tasty"] }
         ];
 
-        let player, currentIndex = 0, isReady = false;
+        let currentIndex = 0;
+        let player;
+        let isAnswered = false;
+        let hasStarted = false;
+        let checkInterval;
 
         function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player-wrapper', {
-                height: '100%', width: '100%',
-                playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0 },
-                events: { 'onReady': () => { isReady = true; } }
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                playerVars: { 
+                    'autoplay': 0, // Enforce no auto-start
+                    'controls': 0, 
+                    'modestbranding': 1, 
+                    'rel': 0,
+                    'iv_load_policy': 3,
+                    'disablekb': 1,
+                    'enablejsapi': 1,
+                    'origin': window.location.origin // Crucial for iframe API inside sandboxed workspaces
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onError': onPlayerError,
+                    'onStateChange': onPlayerStateChange
+                }
             });
         }
 
-        function initVideo() {
-            if (!isReady) return;
-            document.getElementById('overlay').style.display = 'none';
-            player.playVideo();
-            setTimeout(() => player.pauseVideo(), 500);
+        function onPlayerReady() {
+            updateDots();
+            // Start checking the video boundaries
+            checkInterval = setInterval(enforceTimeBounds, 250);
+        }
+
+        function onPlayerError(e) {
+            console.warn("YouTube Playback Error:", e.data);
+            moveCurrentSongToEnd("Video restricted by YouTube's interface.");
+        }
+
+        function moveCurrentSongToEnd(reason) {
+            const errEl = document.getElementById('error-display');
+            const errTitle = document.getElementById('error-title');
+            const errDesc = document.getElementById('error-desc');
+            const song = songs[currentIndex];
+
+            // If the song has already been moved, or it's already the last song, skip it
+            if (song.moved || currentIndex === songs.length - 1) {
+                errTitle.innerText = "Video Restricted";
+                errDesc.innerText = "This official video has playback restrictions. Skipping track...";
+                errEl.style.display = 'flex';
+                
+                setTimeout(() => {
+                    errEl.style.display = 'none';
+                    nextTrack(); 
+                }, 3500);
+            } else {
+                // Mark it as moved and append it to the end of the game
+                song.moved = true;
+                errTitle.innerText = "Video Playback Issue";
+                errDesc.innerText = `Moving "${song.title}" to the end of the challenge list...`;
+                errEl.style.display = 'flex';
+
+                // Reposition the song in the array
+                songs.splice(currentIndex, 1);
+                songs.push(song);
+
+                setTimeout(() => {
+                    errEl.style.display = 'none';
+                    // Load the track at the same index (which now holds the next song)
+                    loadTrack();
+                }, 3500);
+            }
+        }
+
+        function skipAndMoveToEnd() {
+            if (!hasStarted) return;
+            const song = songs[currentIndex];
+
+            // Skip manually and push to the end of the list if not already done
+            if (!song.done && currentIndex < songs.length - 1) {
+                song.moved = true;
+                
+                // Reposition the song in the array
+                songs.splice(currentIndex, 1);
+                songs.push(song);
+                
+                // Reload same index slot (it now has the next song)
+                loadTrack();
+            } else {
+                nextTrack();
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            // When video naturally ends, seek to the start and pause (do NOT auto-replay)
+            if (event.data === YT.PlayerState.ENDED) {
+                player.seekTo(songs[currentIndex].start);
+                player.pauseVideo();
+            }
+        }
+
+        function enforceTimeBounds() {
+            if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                const currentTime = player.getCurrentTime();
+                const song = songs[currentIndex];
+                if (currentTime >= song.end) {
+                    player.pauseVideo();
+                    player.seekTo(song.start); // Back to start and paused until played again
+                }
+            }
+        }
+
+        function playSnippet() {
+            if (player && player.loadVideoById) {
+                const song = songs[currentIndex];
+                // Using loadVideoById on button click to force modern autoplay clearance
+                player.loadVideoById({
+                    videoId: song.videoId,
+                    startSeconds: song.start,
+                    endSeconds: song.end
+                });
+            }
+        }
+
+        function updateDots() {
+            const dots = document.getElementById('progress-dots');
+            dots.innerHTML = '';
+            songs.forEach((song, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.id = `dot-${i}`;
+                if (i === currentIndex) dot.classList.add('active');
+                if (song.done) dot.classList.add('done');
+                dots.appendChild(dot);
+            });
         }
 
         function startApp() {
-            document.getElementById('start-btn').classList.add('hidden');
+            hasStarted = true;
+            document.getElementById('play-btn').classList.remove('hidden');
             loadTrack();
         }
 
         function loadTrack() {
+            if(!hasStarted) return;
             const song = songs[currentIndex];
-            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span class="text-blue-600 font-bold underline">_______</span>`);
+            isAnswered = false;
+            
+            document.getElementById('track-count').innerText = `Challenge ${currentIndex + 1} / ${songs.length}`;
+            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span id="blank" class="text-blue-500 border-b-4 border-blue-200 px-2">_______</span>`);
+            document.getElementById('status-msg').classList.add('hidden');
+            
             const container = document.getElementById('options-container');
             container.innerHTML = '';
-            song.options.forEach(opt => {
+            
+            // Randomize options
+            [...song.options].sort(() => Math.random() - 0.5).forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "bg-white p-4 rounded-lg border-2 border-gray-200 font-bold hover:border-blue-500 transition-all";
+                btn.className = "macaroon-button bg-white p-6 rounded-3xl font-bold text-gray-700 text-xl shadow-md";
                 btn.innerText = opt;
                 btn.onclick = () => checkAnswer(btn, opt);
                 container.appendChild(btn);
             });
-            player.loadVideoById({ videoId: song.videoId, startSeconds: song.start, endSeconds: song.end });
+
+            // Cue the video passively
+            player.cueVideoById({
+                videoId: song.videoId,
+                startSeconds: song.start,
+                endSeconds: song.end
+            });
+
+            // Dynamically refresh progress bar dots
+            updateDots();
         }
 
         function checkAnswer(btn, choice) {
-            if (choice === songs[currentIndex].answer) {
+            if(isAnswered) return;
+            const song = songs[currentIndex];
+            
+            if(choice === song.answer) {
+                isAnswered = true;
                 btn.classList.add('option-correct');
-                setTimeout(() => {
-                    currentIndex = (currentIndex + 1) % songs.length;
-                    loadTrack();
-                }, 1000);
+                document.getElementById('blank').innerText = song.answer;
+                song.done = true; // Mark song as successfully answered
+                updateDots(); // Refresh dot state
+                document.getElementById('status-msg').classList.remove('hidden');
+                
+                // Stop player upon correct answer
+                if (player && player.pauseVideo) {
+                    player.pauseVideo();
+                }
+
+                // Auto-advance after 3 seconds
+                setTimeout(() => { 
+                    if(currentIndex < songs.length - 1) {
+                        currentIndex++;
+                        loadTrack();
+                    } else {
+                        finishGame();
+                    }
+                }, 3000);
             } else {
                 btn.classList.add('option-wrong');
                 setTimeout(() => btn.classList.remove('option-wrong'), 500);
             }
         }
+
+        function finishGame() {
+            document.getElementById('lyric-box').innerHTML = "🎉 <br> You're a Music Master!";
+            document.getElementById('play-btn').classList.add('hidden');
+            document.getElementById('options-container').innerHTML = `
+                <button onclick="location.reload()" class="col-span-2 bg-green-500 text-white p-8 rounded-3xl font-bold text-2xl shadow-xl hover:bg-green-600">
+                    PLAY AGAIN 🔄
+                </button>
+            `;
+            player.stopVideo();
+        }
+
+        function nextTrack() { 
+            if(currentIndex < songs.length - 1) { 
+                currentIndex++; 
+                loadTrack(); 
+            } else {
+                finishGame();
+            }
+        }
+        
+        // Custom Back Navigation
+        function prevTrack() { 
+            if(currentIndex > 0) { 
+                currentIndex--; 
+                loadTrack(); 
+            } 
+        }
+
+        // HTML5 Fullscreen API Handler
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error enabling full-screen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Listener to change button SVG representation depending on state
+        document.addEventListener('fullscreenchange', () => {
+            const icon = document.getElementById('fullscreen-icon');
+            if (document.fullscreenElement) {
+                // Exit Fullscreen Icon
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14h4v4m0-4l-5 5m11-5h4v-4m0 4l-5-5M4 10h4V6m0 4L3 3m11 7h4v4m0-4l5 5" />`;
+            } else {
+                // Enter Fullscreen Icon
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />`;
+            }
+        });
     </script>
 </body>
 </html>
