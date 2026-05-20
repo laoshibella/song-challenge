@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macaroon English Music Challenge</title>
+    <title>Official Music Video Challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
-            background-color: #FFF9F0;
+            background-color: #f0f4f8;
             margin: 0;
+            height: 100vh;
+            display: flex;
             overflow: hidden;
         }
         
@@ -18,106 +20,170 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            width: 50%;
         }
 
-        .bg-mint { background-color: #E6F7F5; }
+        .bg-soft-blue { background-color: #e0f2fe; }
+        
         .macaroon-button {
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 3px solid white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 4px solid white;
+            cursor: pointer;
         }
         
         .macaroon-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        .option-correct { background-color: #A7F3D0 !important; border-color: #34D399 !important; color: #065F46 !important; }
-        .option-wrong { background-color: #FECACA !important; border-color: #F87171 !important; color: #991B1B !important; animation: shake 0.4s; }
+        .option-correct { background-color: #34D399 !important; color: white !important; border-color: #059669 !important; }
+        .option-wrong { background-color: #F87171 !important; color: white !important; border-color: #DC2626 !important; animation: shake 0.4s; }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
 
-        .video-container { position: relative; width: 100%; height: 100%; background: #000; }
-        #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .video-container { position: relative; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; }
+        #player { width: 100%; height: 100%; pointer-events: none; }
 
-        .progress-bar-container { display: flex; gap: 6px; padding: 10px; background: white; border-radius: 99px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
-        .dot { width: 10px; height: 10px; border-radius: 50%; background: #E5E7EB; transition: all 0.3s; }
-        .dot.active { background: #FF9AA2; transform: scale(1.3); }
-        .dot.done { background: #B5EAD7; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; transition: all 0.3s; }
+        .dot.active { background: #3b82f6; transform: scale(1.4); }
+        .dot.done { background: #10b981; }
+
+        .error-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            z-index: 50;
+        }
     </style>
 </head>
-<body class="flex flex-col md:flex-row">
+<body>
 
-    <!-- Questions -->
-    <div class="w-full md:w-1/2 side-panel bg-mint p-6 md:p-10 justify-between border-r-4 border-white">
+    <!-- Left side: Questions -->
+    <div class="side-panel bg-soft-blue p-8 justify-between border-r-8 border-white">
         <div class="flex justify-between items-center">
-            <h1 class="text-xl font-bold text-teal-600">🎵 Music Quest</h1>
-            <div class="progress-bar-container" id="progress-dots"></div>
+            <h1 class="text-3xl font-bold text-blue-600">🎧 Pop Quiz</h1>
+            <div class="flex gap-2" id="progress-dots"></div>
         </div>
 
-        <div class="flex flex-col gap-6 flex-grow justify-center">
-            <div class="bg-white p-8 rounded-[40px] shadow-sm border-4 border-white relative">
-                <span id="track-count" class="absolute -top-3 left-6 bg-pink-400 text-white px-3 py-1 rounded-full text-xs font-bold">Song 1 / 15</span>
-                <p id="lyric-box" class="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed text-center">
-                   Loading question...
+        <div class="flex flex-col gap-8 flex-grow justify-center max-w-xl mx-auto w-full">
+            <div class="bg-white p-10 rounded-[40px] shadow-xl border-4 border-white relative">
+                <span id="track-count" class="absolute -top-4 left-8 bg-blue-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">Press Start</span>
+                <p id="lyric-box" class="text-2xl md:text-3xl font-bold text-gray-800 leading-relaxed text-center italic">
+                   Ready for some music?
                 </p>
             </div>
 
-            <div id="options-container" class="grid grid-cols-2 gap-3"></div>
+            <div id="options-container" class="grid grid-cols-2 gap-4">
+                <button onclick="startApp()" class="col-span-2 bg-blue-600 text-white p-8 rounded-3xl font-bold text-3xl shadow-xl hover:bg-blue-700 transition-all">
+                    START 🎶
+                </button>
+            </div>
         </div>
 
-        <div class="flex justify-between items-center">
-            <button onclick="prevTrack()" class="macaroon-button bg-white text-teal-600 px-4 py-2 rounded-xl font-bold text-sm">Back</button>
-            <div id="status-msg" class="text-pink-500 font-bold hidden">Great! ⭐</div>
-            <button onclick="nextTrack()" class="macaroon-button bg-pink-100 text-pink-600 px-4 py-2 rounded-xl font-bold text-sm">Next</button>
+        <div class="flex justify-between items-center px-4">
+            <button onclick="prevTrack()" class="macaroon-button bg-white text-gray-400 px-8 py-4 rounded-2xl font-bold">Previous</button>
+            <div id="status-msg" class="text-green-600 font-bold text-xl hidden">Correct! 🌟</div>
+            <button onclick="nextTrack()" class="macaroon-button bg-blue-100 text-blue-600 px-8 py-4 rounded-2xl font-bold">Skip</button>
         </div>
     </div>
 
-    <!-- Video -->
-    <div class="w-full md:w-1/2 side-panel bg-black">
+    <!-- Right side: Video Player -->
+    <div class="side-panel">
         <div class="video-container">
+            <div id="error-display" class="error-overlay">
+                <div class="text-4xl mb-4">🔇</div>
+                <h2 class="text-xl font-bold mb-2">Video Unavailable</h2>
+                <p class="text-gray-400 mb-4">This official video has playback restrictions. Skipping to the next track...</p>
+                <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
             <div id="player"></div>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+        // Official Music Videos
+        // Customized Playback Timestamps as requested
         const songs = [
-            { title: "Peaches", videoId: "pyWFE7qKR8I", start: 0, end: 15, lyric: "I get my peaches out in _______.", answer: "Georgia", options: ["Florida", "Georgia", "Taiwan", "London"] },
-            { title: "Flowers", videoId: "G7KNmW9a75Y", start: 62, end: 75, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a car", "diamonds"] },
-            { title: "Stay", videoId: "kTJczUoc26U", start: 35, end: 50, lyric: "I need you to stay, _______.", answer: "need you to stay", options: ["don't go away", "need you to stay", "I love you", "won't you play"] },
-            { title: "Cupid", videoId: "Qc7_zRjH808", start: 53, end: 68, lyric: "I'm feeling _______.", answer: "lonely", options: ["happy", "lonely", "sleepy", "hungry"] },
-            { title: "Golden Hour", videoId: "PEM0Vs8jf1w", start: 58, end: 75, lyric: "It was just two less _______.", answer: "lonely people", options: ["happy people", "lonely people", "angry people", "funny people"] },
-            { title: "Anti-Hero", videoId: "b7QlX3yR2xs", start: 40, end: 55, lyric: "It's me, hi, I'm the _______.", answer: "problem", options: ["teacher", "problem", "hero", "student"] },
-            { title: "Dynamite", videoId: "gdZLi9oWNZg", start: 30, end: 45, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
-            { title: "Levitating", videoId: "TUVcZfQe-Kw", start: 55, end: 70, lyric: "I believe that we're _______.", answer: "meant to be", options: ["dancing free", "meant to be", "in the sea", "flying high"] },
-            { title: "Bad Habits", videoId: "orJSJGHjBLI", start: 58, end: 72, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "the park"] },
-            { title: "Dance Monkey", videoId: "q0hyYWKXF0Q", start: 35, end: 50, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
-            { title: "Perfect", videoId: "2Vv-BfVoq4g", start: 60, end: 75, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
-            { title: "Shake It Off", videoId: "nfWlot6h_JM", start: 45, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "bake"] },
-            { title: "Count On Me", videoId: "6k8cpUkKK4c", start: 30, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "my best friend"] },
-            { title: "Shallow", videoId: "bo_efYhYU2A", start: 90, end: 105, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
-            { title: "Yummy", videoId: "8EJ3zhqeP9w", start: 35, end: 50, lyric: "You got that yummy, _______.", answer: "yummy", options: ["yummy", "honey", "funny", "sunny"] }
+            { title: "Peaches", videoId: "Pyme6maafpM", start: 5, end: 20, lyric: "I get my peaches out in _______.", answer: "Georgia", options: ["Florida", "Georgia", "California", "London"] },
+            { title: "Flowers", videoId: "G7KNmW9a75Y", start: 8, end: 40, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a ring", "diamonds"] },
+            { title: "Stay", videoId: "yS7Zp86G0Ok", start: 30, end: 50, lyric: "I need you to stay, _______.", answer: "need you to stay", options: ["don't go away", "need you to stay", "please don't stay", "I'll be okay"] },
+            { title: "Cupid", videoId: "qH-I_vT9b9U", start: 11, end: 30, lyric: "I'm feeling _______.", answer: "lonely", options: ["happy", "lonely", "pretty", "hungry"] },
+            { title: "Golden Hour", videoId: "PEM0Vs8jf1w", start: 5, end: 18, lyric: "It was just two _______.", answer: "lovers", options: ["lovers", "friends", "enemies", "teachers"] },
+            { title: "Anti-Hero", videoId: "b1kbLwvqugk", start: 40, end: 60, lyric: "It's me, hi, I'm the _______.", answer: "problem", options: ["hero", "problem", "villain", "doctor"] },
+            { title: "Dynamite", videoId: "gdZLi9oWNZg", start: 70, end: 80, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
+            { title: "Levitating", videoId: "TUVcZfQe-Kw", start: 15, end: 35, lyric: "My sugarboo, I'm _______.", answer: "levitating", options: ["levitating", "dancing free", "meant to be", "flying high"] },
+            { title: "Bad Habits", videoId: "orJSJGHjBLI", start: 85, end: 100, lyric: "My bad habits lead to _______.", answer: "you", options: ["home", "you", "bed", "nothing"] },
+            { title: "Dance Monkey", videoId: "q0hyYWKXF0Q", start: 110, end: 130, lyric: "Dance for me, dance for me, _______.", answer: "dance for me", options: ["sing for me", "dance for me", "look at me", "jump for me"] },
+            { title: "Perfect", videoId: "2Vv-BfVoq4g", start: 75, end: 90, lyric: "Baby, I'm dancing in the _______.", answer: "dark", options: ["rain", "dark", "street", "light"] },
+            { title: "Shake It Off", videoId: "nfWlot6h_JM", start: 37, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "fake"] },
+            { title: "Count On Me", videoId: "6k8cpUkKK4c", start: 20, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "4 5 6"] },
+            { title: "Shallow", videoId: "bo_efYhYU2A", start: 115, end: 130, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
+            { title: "Yummy", videoId: "8EJ3zhqeP9w", start: 20, end: 40, lyric: "You got that yummy, _______.", answer: "yummy", options: ["yummy", "honey", "funny", "tasty"] }
         ];
 
         let currentIndex = 0;
         let player;
         let isAnswered = false;
+        let hasStarted = false;
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                height: '100%', width: '100%', videoId: songs[currentIndex].videoId,
-                playerVars: { 'autoplay': 1, 'controls': 1, 'start': songs[currentIndex].start, 'end': songs[currentIndex].end, 'rel': 0 },
-                events: { 'onReady': () => { initUI(); loadTrack(); } }
+                height: '100%',
+                width: '100%',
+                playerVars: { 
+                    'autoplay': 1, 
+                    'controls': 0, 
+                    'modestbranding': 1, 
+                    'rel': 0,
+                    'iv_load_policy': 3,
+                    'disablekb': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onError': onPlayerError,
+                    'onStateChange': onPlayerStateChange
+                }
             });
         }
 
-        function initUI() {
+        function onPlayerReady() {
+            initProgress();
+        }
+
+        function onPlayerError(e) {
+            console.warn("YouTube Playback Error:", e.data);
+            const errEl = document.getElementById('error-display');
+            errEl.style.display = 'flex';
+            
+            setTimeout(() => {
+                errEl.style.display = 'none';
+                nextTrack(); // Auto skip to functional video
+            }, 3500);
+        }
+
+        function onPlayerStateChange(event) {
+            // If it finishes playing the segment, loop back to the start point
+            if (event.data === YT.PlayerState.ENDED) {
+                player.seekTo(songs[currentIndex].start);
+                player.playVideo();
+            }
+        }
+
+        function initProgress() {
             const dots = document.getElementById('progress-dots');
+            dots.innerHTML = '';
             songs.forEach((_, i) => {
                 const dot = document.createElement('div');
                 dot.className = 'dot';
@@ -126,24 +192,40 @@
             });
         }
 
+        function startApp() {
+            hasStarted = true;
+            loadTrack();
+        }
+
         function loadTrack() {
+            if(!hasStarted) return;
             const song = songs[currentIndex];
             isAnswered = false;
-            document.getElementById('track-count').innerText = `Song ${currentIndex + 1} / ${songs.length}`;
-            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span id="blank" class="text-pink-400 border-b-2 border-pink-200 px-1 animate-pulse">_______</span>`);
+            
+            document.getElementById('track-count').innerText = `Challenge ${currentIndex + 1} / ${songs.length}`;
+            document.getElementById('lyric-box').innerHTML = song.lyric.replace("_______", `<span id="blank" class="text-blue-500 border-b-4 border-blue-200 px-2">_______</span>`);
             document.getElementById('status-msg').classList.add('hidden');
+            
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             
+            // Randomize options
             [...song.options].sort(() => Math.random() - 0.5).forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "macaroon-button bg-white p-4 rounded-2xl font-bold text-gray-700";
+                btn.className = "macaroon-button bg-white p-6 rounded-3xl font-bold text-gray-700 text-xl shadow-md";
                 btn.innerText = opt;
                 btn.onclick = () => checkAnswer(btn, opt);
                 container.appendChild(btn);
             });
 
-            player.loadVideoById({ videoId: song.videoId, startSeconds: song.start, endSeconds: song.end });
+            // Load official video with both start and end bounds
+            player.loadVideoById({
+                videoId: song.videoId,
+                startSeconds: song.start,
+                endSeconds: song.end
+            });
+
+            // Update dots
             document.querySelectorAll('.dot').forEach((d, i) => {
                 d.classList.remove('active');
                 if(i === currentIndex) d.classList.add('active');
@@ -152,20 +234,49 @@
 
         function checkAnswer(btn, choice) {
             if(isAnswered) return;
-            if(choice === songs[currentIndex].answer) {
+            const song = songs[currentIndex];
+            
+            if(choice === song.answer) {
+                isAnswered = true;
                 btn.classList.add('option-correct');
-                document.getElementById('blank').innerText = songs[currentIndex].answer;
+                document.getElementById('blank').innerText = song.answer;
                 document.getElementById(`dot-${currentIndex}`).classList.add('done');
                 document.getElementById('status-msg').classList.remove('hidden');
-                isAnswered = true;
-                setTimeout(() => { if(currentIndex < songs.length - 1) nextTrack(); }, 2000);
+                
+                // Auto-advance after 3 seconds
+                setTimeout(() => { 
+                    if(currentIndex < songs.length - 1) {
+                        currentIndex++;
+                        loadTrack();
+                    } else {
+                        finishGame();
+                    }
+                }, 3000);
             } else {
                 btn.classList.add('option-wrong');
                 setTimeout(() => btn.classList.remove('option-wrong'), 500);
             }
         }
 
-        function nextTrack() { if(currentIndex < songs.length - 1) { currentIndex++; loadTrack(); } }
+        function finishGame() {
+            document.getElementById('lyric-box').innerHTML = "🎉 <br> You're a Music Master!";
+            document.getElementById('options-container').innerHTML = `
+                <button onclick="location.reload()" class="col-span-2 bg-green-500 text-white p-8 rounded-3xl font-bold text-2xl shadow-xl hover:bg-green-600">
+                    PLAY AGAIN 🔄
+                </button>
+            `;
+            player.stopVideo();
+        }
+
+        function nextTrack() { 
+            if(currentIndex < songs.length - 1) { 
+                currentIndex++; 
+                loadTrack(); 
+            } else {
+                finishGame();
+            }
+        }
+        
         function prevTrack() { if(currentIndex > 0) { currentIndex--; loadTrack(); } }
     </script>
 </body>
