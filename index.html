@@ -13,10 +13,9 @@
         .macaroon-button { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 4px solid white; cursor: pointer; }
         .macaroon-button:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .option-correct { background-color: #34D399 !important; color: white !important; border-color: #059669 !important; }
-        .option-wrong { background-color: #F87171 !important; color: white !important; border-color: #DC2626 !important; animation: shake 0.4s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
-        .video-container { position: relative; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; }
-        #player { width: 100%; height: 100%; pointer-events: none; }
+        .option-wrong { background-color: #F87171 !important; color: white !important; border-color: #DC2626 !important; }
+        .video-container { width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; }
+        #player { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
@@ -42,10 +41,7 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const songs = [
-            { title: "Soda Pop", videoId: "h_D3y8t0zY0", start: 0, end: 15, lyric: "Feeling like a _______.", answer: "soda pop", options: ["soda pop", "pop star", "fizzy drink", "cherry cola"] },
-            { title: "Golden (Huntrx)", videoId: "h_D3y8t0zY0", start: 20, end: 35, lyric: "You are looking _______.", answer: "golden", options: ["golden", "shiny", "bright", "radiant"] },
             { title: "Flowers", videoId: "G7KNmW9a75Y", start: 8, end: 40, lyric: "I can buy myself _______.", answer: "flowers", options: ["candy", "flowers", "a ring", "diamonds"] },
-            { title: "Stay", videoId: "yS7Zp86G0Ok", start: 30, end: 50, lyric: "I need you to stay, _______.", answer: "need you to stay", options: ["don't go away", "need you to stay", "please don't stay", "I'll be okay"] },
             { title: "Golden Hour", videoId: "PEM0Vs8jf1w", start: 5, end: 25, lyric: "It was just two _______.", answer: "lovers", options: ["lovers", "friends", "enemies", "teachers"] },
             { title: "Anti-Hero", videoId: "b1kbLwvqugk", start: 40, end: 60, lyric: "It's me, hi, I'm the _______.", answer: "problem", options: ["hero", "problem", "villain", "doctor"] },
             { title: "Dynamite", videoId: "gdZLi9oWNZg", start: 70, end: 90, lyric: "Light it up like _______.", answer: "dynamite", options: ["fireworks", "a candle", "dynamite", "the sun"] },
@@ -56,20 +52,16 @@
             { title: "Shake It Off", videoId: "nfWlot6h_JM", start: 37, end: 60, lyric: "Haters gonna _______.", answer: "hate", options: ["play", "shake", "hate", "fake"] },
             { title: "Count On Me", videoId: "6k8cpUkKK4c", start: 20, end: 45, lyric: "You can count on me like _______.", answer: "1 2 3", options: ["A B C", "1 2 3", "do re mi", "4 5 6"] },
             { title: "Shallow", videoId: "bo_efYhYU2A", start: 115, end: 130, lyric: "We're far from the _______ now.", answer: "shallow", options: ["water", "shallow", "ocean", "deep"] },
-            { title: "Defying Gravity", videoId: "67Q9Jv3-vM0", start: 140, end: 160, lyric: "It's time to try, defying _______.", answer: "gravity", options: ["gravity", "the odds", "logic", "reality"] }
+            // Replacements
+            { title: "As It Was", videoId: "H5v3kku4y6Q", start: 15, end: 35, lyric: "In this world, it's just _______.", answer: "us", options: ["us", "you", "me", "them"] },
+            { title: "Blinding Lights", videoId: "4NRXx6U8ABQ", start: 20, end: 40, lyric: "I'm blinded by the _______.", answer: "lights", options: ["lights", "night", "stars", "fights"] },
+            { title: "Heat Waves", videoId: "mAKsZ26SabQ", start: 10, end: 30, lyric: "Sometimes all I think about is _______.", answer: "you", options: ["you", "love", "life", "home"] },
+            { title: "Watermelon Sugar", videoId: "E07s5ZYygMg", start: 25, end: 45, lyric: "Tastes like _______ sugar.", answer: "watermelon", options: ["strawberry", "cherry", "watermelon", "peach"] }
         ];
 
         let currentIndex = 0, player, hasStarted = false;
 
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', { height: '100%', width: '100%', events: { 'onReady': () => { setInterval(enforceTimeBounds, 250); } } });
-        }
-
-        function enforceTimeBounds() {
-            if (player?.getPlayerState?.() === YT.PlayerState.PLAYING && player.getCurrentTime() >= songs[currentIndex].end) {
-                player.pauseVideo(); player.seekTo(songs[currentIndex].start);
-            }
-        }
+        function onYouTubeIframeAPIReady() { player = new YT.Player('player', { height: '100%', width: '100%' }); }
 
         function startApp() { hasStarted = true; document.getElementById('play-btn').classList.remove('hidden'); loadTrack(); }
 
@@ -86,22 +78,18 @@
                 btn.onclick = () => { 
                     if(opt === song.answer) { 
                         btn.classList.add('option-correct'); 
-                        setTimeout(() => { 
-                            currentIndex++; 
-                            if(currentIndex < songs.length) loadTrack(); 
-                            else document.getElementById('lyric-box').innerText = 'Challenge Complete! 🎉'; 
-                        }, 1000); 
-                    } else { 
-                        btn.classList.add('option-wrong'); 
-                        setTimeout(() => btn.classList.remove('option-wrong'), 500); 
-                    } 
+                        setTimeout(() => { currentIndex++; if(currentIndex < songs.length) loadTrack(); else document.getElementById('lyric-box').innerText = 'Challenge Complete! 🎉'; }, 1000); 
+                    } else { btn.classList.add('option-wrong'); setTimeout(() => btn.classList.remove('option-wrong'), 500); } 
                 };
                 container.appendChild(btn);
             });
             player.cueVideoById({ videoId: song.videoId, startSeconds: song.start, endSeconds: song.end });
         }
 
-        function playSnippet() { player.loadVideoById({ videoId: songs[currentIndex].videoId, startSeconds: songs[currentIndex].start, endSeconds: songs[currentIndex].end }); }
+        function playSnippet() { 
+            const song = songs[currentIndex];
+            player.loadVideoById({ videoId: song.videoId, startSeconds: song.start, endSeconds: song.end }); 
+        }
     </script>
 </body>
 </html>
