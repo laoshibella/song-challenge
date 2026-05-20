@@ -16,9 +16,20 @@
         .option-wrong { background-color: #F87171 !important; color: white !important; border-color: #DC2626 !important; }
         .video-container { width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; }
         #player { width: 100%; height: 100%; }
+        /* Fullscreen handling */
+        :-webkit-full-screen { background: #000; }
+        :-moz-full-screen { background: #000; }
+        :fullscreen { background: #000; }
     </style>
 </head>
 <body>
+
+    <!-- Fullscreen Toggle Button -->
+    <button onclick="toggleFullScreen()" class="absolute top-4 right-4 z-50 bg-white/80 hover:bg-white backdrop-blur-sm p-3 rounded-full shadow-lg border-2 border-blue-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+    </button>
 
     <div class="side-panel bg-soft-blue p-8 justify-between border-r-8 border-white">
         <h1 class="text-3xl font-bold text-blue-600">🎧 Pop Quiz</h1>
@@ -61,6 +72,14 @@
         let currentIndex = 0, player;
 
         function onYouTubeIframeAPIReady() { player = new YT.Player('player', { height: '100%', width: '100%' }); }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
 
         function startApp() { document.getElementById('play-btn').classList.remove('hidden'); loadTrack(); }
 
