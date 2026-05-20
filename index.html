@@ -104,7 +104,7 @@
         <div class="flex justify-between items-center px-4">
             <button onclick="prevTrack()" class="macaroon-button bg-white text-gray-400 px-8 py-4 rounded-2xl font-bold">Previous</button>
             <div id="status-msg" class="text-green-600 font-bold text-xl hidden">Correct! 🌟</div>
-            <button onclick="nextTrack()" class="macaroon-button bg-blue-100 text-blue-600 px-8 py-4 rounded-2xl font-bold">Skip</button>
+            <button onclick="skipAndMoveToEnd()" class="macaroon-button bg-blue-100 text-blue-600 px-8 py-4 rounded-2xl font-bold">Skip</button>
         </div>
     </div>
 
@@ -178,12 +178,16 @@
 
         function onPlayerError(e) {
             console.warn("YouTube Playback Error:", e.data);
+            moveCurrentSongToEnd("Video restricted by YouTube's interface.");
+        }
+
+        function moveCurrentSongToEnd(reason) {
             const errEl = document.getElementById('error-display');
             const errTitle = document.getElementById('error-title');
             const errDesc = document.getElementById('error-desc');
             const song = songs[currentIndex];
 
-            // If the song has already been moved once, or it's already the very last song, we skip it
+            // If the song has already been moved, or it's already the last song, skip it
             if (song.moved || currentIndex === songs.length - 1) {
                 errTitle.innerText = "Video Restricted";
                 errDesc.innerText = "This official video has playback restrictions. Skipping track...";
@@ -194,9 +198,9 @@
                     nextTrack(); 
                 }, 3500);
             } else {
-                // Otherwise, mark it as moved and append it to the end of the game
+                // Mark it as moved and append it to the end of the game
                 song.moved = true;
-                errTitle.innerText = "Video Loading Issue";
+                errTitle.innerText = "Video Playback Issue";
                 errDesc.innerText = `Moving "${song.title}" to the end of the challenge list...`;
                 errEl.style.display = 'flex';
 
@@ -206,9 +210,28 @@
 
                 setTimeout(() => {
                     errEl.style.display = 'none';
-                    // Load the track at the same index (which now has the next song)
+                    // Load the track at the same index (which now holds the next song)
                     loadTrack();
                 }, 3500);
+            }
+        }
+
+        function skipAndMoveToEnd() {
+            if (!hasStarted) return;
+            const song = songs[currentIndex];
+
+            // Skip manually and push to the end of the list if not already done
+            if (!song.done && currentIndex < songs.length - 1) {
+                song.moved = true;
+                
+                // Reposition the song in the array
+                songs.splice(currentIndex, 1);
+                songs.push(song);
+                
+                // Reload same index slot (it now has the next song)
+                loadTrack();
+            } else {
+                nextTrack();
             }
         }
 
@@ -346,7 +369,13 @@
             }
         }
         
-        function prevTrack() { if(currentIndex > 0) { currentIndex--; loadTrack(); } }
+        // Custom Back Navigation
+        function prevTrack() { 
+            if(currentIndex > 0) { 
+                currentIndex--; 
+                loadTrack(); 
+            } 
+        }
     </script>
 </body>
 </html>
